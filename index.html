@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Voice Generator</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #222;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 18px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 25px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      font-size: 16px;
+      resize: vertical;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: #555;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 15px;
+      padding: 15px;
+      border: none;
+      border-radius: 12px;
+      background: #111;
+      color: white;
+      font-size: 17px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #status {
+      text-align: center;
+      margin-top: 18px;
+      color: #555;
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 15px auto;
+        padding: 12px;
+      }
+
+      .card {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="card">
+
+      <h1>🎙️ AI Voice Generator</h1>
+
+      <p class="subtitle">
+        Convert your text into natural AI speech
+      </p>
+
+      <textarea
+        id="text"
+        placeholder="Type your text here..."
+      ></textarea>
+
+      <button id="generateBtn" onclick="generateVoice()">
+        Generate Voice
+      </button>
+
+      <div id="status"></div>
+
+      <audio id="audioPlayer" controls style="display:none;"></audio>
+
+    </div>
+  </div>
+
+  <script>
+    async function generateVoice() {
+      const text = document.getElementById("text").value.trim();
+      const button = document.getElementById("generateBtn");
+      const status = document.getElementById("status");
+      const audio = document.getElementById("audioPlayer");
+
+      if (!text) {
+        status.textContent = "Please enter some text first.";
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Generating...";
+      status.textContent = "Please wait...";
+
+      try {
+        const response = await fetch("/api/tts", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            text: text
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || "Something went wrong.");
+        }
+
+        audio.src = data.url;
+        audio.style.display = "block";
+
+        status.textContent = "✅ Voice generated successfully!";
+
+      } catch (error) {
+        console.error(error);
+        status.textContent = "❌ Error: " + error.message;
+      }
+
+      button.disabled = false;
+      button.textContent = "Generate Voice";
+    }
+  </script>
+
+</body>
+  </html>
